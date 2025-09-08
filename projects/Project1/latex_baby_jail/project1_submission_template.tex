@@ -1,0 +1,96 @@
+\documentclass[letterpaper, 11pt]{amsart}
+
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amsmath, amssymb, amsfonts}
+
+\usepackage{color}
+\usepackage[colorlinks=true,linkcolor=red,citecolor=blue,urlcolor=cyan]{hyperref}
+
+\definecolor{crimsonred}{RGB}{190,0,0}
+\definecolor{granitepeak}{RGB}{117,142,153}
+\definecolor{lakecolor}{RGB}{58,191,192}
+
+\newcommand{\red}[1]{\textcolor{crimsonred}{#1}}
+\newcommand{\DAR}[1]{\textcolor{granitepeak}{#1}}
+\newcommand{\replace}[1]{\textcolor{lakecolor}{#1}}
+\newcommand{\BO}[1]{\textcolor{blue}{\small {\sf BO:\@ #1}}}
+
+
+\begin{document}
+\noindent {\bf \replace{FIRST LAST NAME} \\ 
+Math 5750/6880: Mathematics of Data Science \\  
+Project \#1 \replace{Progress Report} \\  % when appropriate change me to Final Report
+\today \\ }
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\LaTeX}
+
+\medskip
+
+\noindent {\bf Experience.} I know a bit of the equation syntax, though not much of the document formatting stuff. As a computer nerd with oppinions, I am forced to mention Typst, which is built on being a good markup language, as opposed to \LaTeX, which seems to largely survive on path dependence and spite.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{GitHub}
+\replace{My GitHub Project1 repository is located here:
+\begin{center}
+\url{https://github.com/math-data-science-course/Project1}
+\end{center}
+}
+
+\medskip
+
+\noindent {\bf Experience.} Used Git for keeping track of some personal projects, but Im certainly no wizzard and no collaborative experience. Basic forking stuff on gh, but never studied it really.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Python and Google Colab}
+I solved the folloing ProjectEuler problem: \url{https://projecteuler.net/problem=69}
+
+\medskip
+
+\noindent {\bf Solution.}
+\noindent Used observations about how the score was connected to underlying prime factors to guess 510510, which a brute force run through showed to be correct.
+
+\medskip
+
+\noindent {\bf Experience.} Self-taught data science stuff by way of getting hired to do it before I was really qualified (Research econometrecs; so data cleaning, static analysis, fixed-effect regression and event study (staggered and no) causal type stuff), so my CS fundamentals arn't great but trying to improve.
+A bit more reliant on AI than I am proud to admit, but also working on that.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Regression Analysis}
+\DAR{Include here response to the prompt. Don't forget to include your figures (see commented text below) and to reference it when you discuss it. }
+
+% \begin{figure}
+% \centering
+% \includegraphics[width=0.5\linewidth]{ScatterPredictedTrueValues.png}
+% \caption{Here is a caption!}
+% \label{fig:ScatterPredictedTrueValues}
+% \end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Classification Analysis}
+\DAR{Include here response to the prompt. Don't forget to include your figures. You can use the following \LaTeX \, code for your confusion matrix. }
+
+\begin{center}
+\begin{tabular}{l|c|c|}
+%\multicolumn{1}{c}{} & \multicolumn{2}{c}{\textbf{Predicted}} \\
+%\cline{2-3}
+ & \textbf{Predicted} & \textbf{Predicted} \\
+ & \textbf{Malignant} & \textbf{Benign} \\
+\hline
+\textbf{Actual Malignant} & 10 & FP \\
+\hline
+\textbf{Actual Benign} & FN & TP \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+\end{document}
