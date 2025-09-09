@@ -23,7 +23,7 @@
 # %% id="y_e6lm_newwd"
 # pyright: basic
 # ruff: noqa: e402
-wd = "/home/magnoliad/Desktop/F2025/math_data_sci/projects/1/Project1"
+wd = "/home/magnoliad/Desktop/F2025/math_data_sci/projects/Project1"
 
 
 # conjecture: this is a prime factorization problem kinda
@@ -162,14 +162,15 @@ def evaluate_regression(model, x_data, y_data):
     
     return pd.DataFrame([result_data])
 
-def plot_estimate_vs_actual(model, x_data, y_true, title="Estimate Vs Actual", save_path=None):
+def plot_estimate_vs_actual(model, x_data, y_true, title=None, save_path=None):
     y_pred = model.predict(x_data)
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.scatter( y_true, y_pred, alpha=0.6, edgecolors='w', linewidth=0.5)
     ax.axline((0, 0), slope=1, color='r', linestyle='--', alpha=0.8)
     ax.set_xlabel('True values')
     ax.set_ylabel('Predicted values')
-    ax.set_title(title)
+    if title:
+        ax.set_title(title)
 
     if save_path:
         plt.savefig(save_path, dpi = 300)
@@ -177,7 +178,7 @@ def plot_estimate_vs_actual(model, x_data, y_true, title="Estimate Vs Actual", s
     return fig, ax
 
 
-def plot_residuals_histogram(model, x_data, y_true, title="Residuals Distribution", save_path=None):
+def plot_residuals_histogram(model, x_data, y_true, title=None, save_path=None):
     y_pred = model.predict(x_data)
     residuals = y_true - y_pred
     
@@ -186,7 +187,8 @@ def plot_residuals_histogram(model, x_data, y_true, title="Residuals Distributio
     ax.axvline(x=0, color='r', linestyle='--', alpha=0.8)
     ax.set_xlabel('Residuals')
     ax.set_ylabel('Frequency')
-    ax.set_title(title)
+    if title:
+        ax.set_title(title)
 
     if save_path:
         plt.savefig(save_path, dpi=300)
@@ -228,7 +230,7 @@ x_spec_2 = x_train_processed[['HouseAge', 'AveRooms', 'AveBedrms', 'AveOccup', '
 model = LinearRegression().fit(x_spec_2, y_train_processed)
 evaluation = evaluate_regression(model, x_spec_2, y_train_processed)
 print(evaluation)
-evaluation.to_csv('coeffs2.csv')
+evaluation.to_csv('coeffs2_OLS_train.csv')
 error_chart = plot_estimate_vs_actual(model, x_spec_2, y_train_processed, title="Spec 2 pred v actual comparison", save_path=f'{plots_dir}Spec_2_pred_v_actual')
 residual_histogram = plot_residuals_histogram(model, x_spec_2, y_train_processed, title="Spec 2 residual histogram", save_path=f'{plots_dir}Spec_2_residual_hist')
 # Happy with that, now to validate with the test data
@@ -238,7 +240,7 @@ y_test_processed = y_prep(y_test)
 x_spec_2_test = x_test_processed[['HouseAge', 'AveRooms', 'AveBedrms', 'AveOccup', 'Latitude', 'Longitude', 'log_medinc']]
 evaluation = evaluate_regression(model, x_spec_2_test, y_test_processed)
 print(evaluation)
-evaluation.to_csv('coeffs2.csv')
+evaluation.to_csv('coeffs2_OLS_test.csv')
 error_chart = plot_estimate_vs_actual(model, x_spec_2_test, y_test_processed, title="Spec 2 pred v actual comparison (test data)", save_path=f'{plots_dir}Spec_2_pred_v_actual_test')
 residual_histogram = plot_residuals_histogram(model, x_spec_2_test, y_test_processed, title="Spec 2 residual histogram (test data)", save_path=f'{plots_dir}Spec_2_residual_hist_test')
 
@@ -249,7 +251,7 @@ x_spec_2 = x_train_processed[['HouseAge', 'AveRooms', 'AveBedrms', 'AveOccup', '
 model = Ridge().fit(x_spec_2, y_train_processed)
 evaluation = evaluate_regression(model, x_spec_2, y_train_processed)
 print(evaluation)
-evaluation.to_csv('coeffs2.csv')
+evaluation.to_csv('coeffs2_Ridge_train.csv')
 error_chart = plot_estimate_vs_actual(model, x_spec_2, y_train_processed, title="Spec 2 pred v actual comparison", save_path=f'{plots_dir}Spec_2_pred_v_actual')
 residual_histogram = plot_residuals_histogram(model, x_spec_2, y_train_processed, title="Spec 2 residual histogram", save_path=f'{plots_dir}Spec_2_residual_hist')
 # Happy with that, now to validate with the test data
@@ -259,7 +261,7 @@ y_test_processed = y_prep(y_test)
 x_spec_2_test = x_test_processed[['HouseAge', 'AveRooms', 'AveBedrms', 'AveOccup', 'Latitude', 'Longitude', 'log_medinc']]
 evaluation = evaluate_regression(model, x_spec_2_test, y_test_processed)
 print(evaluation)
-evaluation.to_csv('coeffs2.csv')
+evaluation.to_csv('coeffs2_Ridge_test.csv')
 error_chart = plot_estimate_vs_actual(model, x_spec_2_test, y_test_processed, title="Spec 2 pred v actual comparison (test data)", save_path=f'{plots_dir}Spec_2_pred_v_actual_test')
 residual_histogram = plot_residuals_histogram(model, x_spec_2_test, y_test_processed, title="Spec 2 residual histogram (test data)", save_path=f'{plots_dir}Spec_2_residual_hist_test')
 
@@ -307,13 +309,13 @@ from sklearn.neighbors import KNeighborsClassifier
 print(X_train_std)
 print(y_train)
 
-# well ok similar situation. 
+# well ok similar situation.
 
-def evaluate_model_performance(model, X, y_true, set_name=""):
+def evaluate_model_performance(model, X, y_true, set_name="", feature_names=None):
     y_pred = model.predict(X)
     y_score = model.predict_proba(X)[:, 1]  # Gets probability for the positive class
     
-    accuracy = accuracy_score(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred) 
     roc_auc = roc_auc_score(y_true, y_score)
     avg_precision = average_precision_score(y_true, y_score)
     
@@ -323,19 +325,30 @@ def evaluate_model_performance(model, X, y_true, set_name=""):
     print(f"ROC AUC: {roc_auc:.4f}")
     print(f"Average Precision: {avg_precision:.4f}")
     
+    top_features = []
+    if feature_names is not None and hasattr(model, 'coef_'):
+        importance = np.abs(model.coef_[0])  # Absolute value of coefficients
+        sorted_indices = np.argsort(importance)[::-1]  # Sort descending, get indices
+        top_indices = sorted_indices[:5]  # First 5 indices
+        
+        print("\nTop 5 features by importance:")
+        for idx in top_indices:
+            print(f"{feature_names[idx]}: {importance[idx]:.4f}")
+            top_features.append((feature_names[idx], importance[idx]))
+
     return {'accuracy': accuracy, 'roc_auc': roc_auc, 'avg_precision': avg_precision}
 
-def generate_model_plots(model, X, y_true, set_name="", save_path=None):
+def generate_model_plots(model, X, y_true, set_name=None, save_path=None):
     """
     Generates and displays a confusion matrix, ROC curve, and Precision-Recall curve.
     """
     import matplotlib.pyplot as plt
     
     y_pred = model.predict(X)
-    y_score = model.predict_proba(X)[:, 1]
     
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
-    fig.suptitle(f'{set_name} Set Diagnostics', fontweight='bold')
+    if set_name:
+        fig.suptitle(f'{set_name}', fontweight='bold')
     
     # Confusion Matrix
     cm = confusion_matrix(y_true, y_pred)
@@ -358,18 +371,19 @@ def generate_model_plots(model, X, y_true, set_name="", save_path=None):
         plt.savefig(save_path, dpi = 300)
     plt.show()
 
-model = SVC(probability=True, random_state=42)
+model = SVC(probability=True, kernel='linear', random_state=42)# linear kernel lets us get the most important param
 
 model.fit(X_train_std, y_train)
 
 # Use the above functs to evaluate the Performance on the training data:
-evaluate_model_performance(model, X_train_std, y_train, "SVC Training Performance Eval")
+evaluate_model_performance(model, X_train_std, y_train, "SVC Training Performance Eval", feature_names=data.feature_names)
 generate_model_plots(model, X_train_std, y_train, "SVC Training Performance Eval", save_path=f'{plots_dir}SVC_training_eval')
 
 # and now the test data:
-evaluate_model_performance(model, X_test_std, y_test, "SVC Test Performance Eval")
+evaluate_model_performance(model, X_test_std, y_test, "SVC Test Performance Eval", feature_names=data.feature_names)
 generate_model_plots(model, X_test_std, y_test, "SVC Test Performance Eval", save_path=f'{plots_dir}SVC_test_eval')
 # takes a bit of a hit but well within things still being fine
+# seems like the most important params are mean concave points, radius error, and worst fractal dimension. Whatever those are.
 # Now onto another method. Used KNN, seems interesting and I think I kinda get it.
 # Though im not sure it is strictly classification but.
 results = []
