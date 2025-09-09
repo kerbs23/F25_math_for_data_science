@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1757440454.37127 "project1_submission_template.tex" "project1_submission_template.pdf" "project1_submission_template" 1757440455.49994 0
+["pdflatex"] 1757449682.9891 "project1_submission_template.tex" "project1_submission_template.pdf" "project1_submission_template" 1757449684.1304 0
   "/usr/share/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1755987285 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1755987285 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1755987285 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -97,9 +97,9 @@
   "plots/Spec_2_pred_v_actual_test.png" 1757369329.84585 1093524 af28cd16ccd2ade51492ea1b03e48d37 ""
   "plots/Spec_2_residual_hist_test.png" 1757369330.61087 89139 423a500819e1134af525eb6c296d089a ""
   "plots/knn_training_eval.png" 1757369334.42796 195491 37c3ea2dcc962e5870fd030edde74531 ""
-  "project1_submission_template.aux" 1757440455.47068 3212 d14454c64eecab12dde6123fdb3acc45 "pdflatex"
-  "project1_submission_template.out" 1757440455.47207 2223 b95dd43654f6f6b42f23e25be71a6643 "pdflatex"
-  "project1_submission_template.tex" 1757440452.42903 10259 76d6736ae6c11b1b810624a000894397 ""
+  "project1_submission_template.aux" 1757449684.10418 3212 9a9d4c5b26916cc24a737c6971d73cd4 "pdflatex"
+  "project1_submission_template.out" 1757449684.1057 2223 b95dd43654f6f6b42f23e25be71a6643 "pdflatex"
+  "project1_submission_template.tex" 1757449681.65612 10778 5797f2f7d87c01a590164f6e432297a6 ""
   (generated)
   "project1_submission_template.aux"
   "project1_submission_template.log"
