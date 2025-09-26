@@ -24,6 +24,7 @@
 # %% colab={"base_uri": "https://localhost:8080/"} id="AB136H0PGKq1" outputId="6fcea671-2dcb-4b43-c98a-83ec001de164"
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import make_blobs
 
 # Generate 5 Gaussian blobs in 10 dimensions
@@ -41,9 +42,8 @@ print(type(y_true),y_true.shape)
 # %% id="5GAsN-dmHjRM"
 # Start with a basic k-means analysys of the data
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 
 df = pd.DataFrame(data=X)
@@ -71,7 +71,20 @@ plt.savefig('KMeans_plot.png')
 plt.show()
 
 # now to re-index to match the predicted and real columns
+# going to just take the mode of each match, and if there are no collisions call it good
 
+# Find modal mapping
+modal_map = df.groupby('kmeans_5_pred_category')['true_category'].agg(lambda x: x.mode().iloc[0] if not x.mode().empty else None)
+
+# Check if mapping is one-to-one
+print(modal_map)
+
+# Apply transformation
+df['kmeans_5_pred_category_adj'] = df['kmeans_5_pred_category'].map(modal_map) # pyright: ignore[]
+
+# create the confusion matrix
+confusion_matrix_kmean5 = confusion_matrix(df['true_category'], df['kmeans_5_pred_category_adj'])
+print(confusion_matrix_kmean5)
 
 # %% [markdown] id="a2qcKggmIH8T"
 
