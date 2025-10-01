@@ -67,8 +67,9 @@ df.to_csv("gausian_blob_processed.csv")
 # Plot it
 plt.scatter(df['X_pca_2d_1'], df['X_pca_2d_2'], c=df['kmeans_5_pred_category'], cmap='viridis')
 plt.scatter(centers_2d[:, 0], centers_2d[:, 1], c='red', marker='X', s=200)
-plt.savefig('KMeans_plot.png')
+plt.savefig('latex_jail/plots/KMeans_plot.png')
 plt.show()
+plt.close()
 
 # now to re-index to match the predicted and real columns
 # going to just take the mode of each match, and if there are no collisions call it good
@@ -94,6 +95,7 @@ print(confusion_matrix_kmean5)
 import numpy as np
 from sklearn.datasets import fetch_openml
 from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
 
 # Load Fashion-MNIST from OpenML
 # Classes (0-9): T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot
@@ -104,10 +106,78 @@ print(type(X),X.shape)
 print(type(y),y.shape)
 
 # %% id="0REsDBunNmEl"
-# your code here
+
+# think it would be cool to see the data through the process
+def peek_img(X=X, y=y, savepath=None):
+    # get one unique sample per class
+    unique_indices = []
+    for class_id in range(10):
+        idx = np.where(y == class_id)[0][0]
+        unique_indices.append(idx)
+    
+    # Create figure with labels
+    fig, axes = plt.subplots(2, 5, figsize=(12, 6))
+    class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                   'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+    
+    side_length = int(np.sqrt(X.shape[1]))
+
+
+    for i, idx in enumerate(unique_indices):
+        ax = axes.flat[i]
+        ax.imshow(X[idx].reshape(side_length,side_length), cmap='gray')
+        ax.set_title(class_names[y[idx]])
+        ax.axis('off')
+    
+    plt.tight_layout()
+    if savepath:
+        plt.savefig(savepath)
+    plt.show()
+    plt.close()
+
+peek_img(savepath='latex_jail/plots/examble_items_fashion.png')
+
+# Scale the data
+X = StandardScaler().fit_transform(X)
+peek_img()
+
 
 # %% [markdown] id="6Bpow7TrZ7iB"
 # # 3. Dimensionality reduction for Fashion-MNIST
+
+# think it would be cool to see the data through the process
+def peek_img(X=X, y=y, savepath=None):
+    # get one unique sample per class
+    unique_indices = []
+    for class_id in range(10):
+        idx = np.where(y == class_id)[0][0]
+        unique_indices.append(idx)
+    
+    # Create figure with labels
+    fig, axes = plt.subplots(2, 5, figsize=(12, 6))
+    class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                   'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+    
+    side_length = int(np.sqrt(X.shape[1]))
+
+
+    for i, idx in enumerate(unique_indices):
+        ax = axes.flat[i]
+        ax.imshow(X[idx].reshape(side_length,side_length), cmap='gray')
+        ax.set_title(class_names[y[idx]])
+        ax.axis('off')
+    
+    plt.tight_layout()
+    if savepath:
+        plt.savefig(savepath)
+    plt.show()
+    plt.close()
+
+peek_img(savepath='latex_jail/plots/examble_items_fashion.png')
+
+# Scale the data
+X = StandardScaler().fit_transform(X)
+peek_img()
 
 # %% id="ejYYENCQZ9tj"
 # your code here
