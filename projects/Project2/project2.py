@@ -46,46 +46,69 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 
-df = pd.DataFrame(data=X)
-df.columns = [f'X_{i+1}' for i in range(len(df.columns))]
-df['true_category'] = y_true
+def do_kmeans_analysys(k = 5):
+    '''Hurridly refactored to do an analysys for arbitrary k for the elbow thing'''
+    df = pd.DataFrame(data=X)
+    df.columns = [f'X_{i+1}' for i in range(len(df.columns))]
+    df['true_category'] = y_true
+    
+    kmeans_5 = KMeans(n_clusters=k).fit(X) # because this is using k-means++ sampling there is only one run, so lowest inertia is just the inertia of the output
+    print(f'Lowest inertia: {kmeans_5.inertia_}')
+    df['kmeans_5_pred_category'] = kmeans_5.labels_
+    
+    centers = kmeans_5.cluster_centers_
+    
+    # PCA down to 2 dim
+    X_pca_2d = PCA(n_components=2).fit(X)
+    df[['X_pca_2d_1', 'X_pca_2d_2']] = X_pca_2d.transform(X)
+    centers_2d = X_pca_2d.transform(centers)
+    
+    print(df.head)
+    df.to_csv("gausian_blob_processed.csv")
+    
+    # Plot it
+    plt.scatter(df['X_pca_2d_1'], df['X_pca_2d_2'], c=df['kmeans_5_pred_category'], cmap='viridis')
+    plt.scatter(centers_2d[:, 0], centers_2d[:, 1], c='red', marker='X', s=200)
+    if (k == 5):
+        plt.savefig('latex_jail/plots/KMeans_plot.png')
+    plt.close()
+    
+    # now to re-index to match the predicted and real columns
+    # going to just take the mode of each match, and if there are no collisions call it good
+    
+    # Find modal mapping
+    modal_map = df.groupby('kmeans_5_pred_category')['true_category'].agg(lambda x: x.mode().iloc[0] if not x.mode().empty else None)
+    
+    # Check if mapping is one-to-one
+    print(modal_map)
+    
+    # Apply transformation
+    df['kmeans_5_pred_category_adj'] = df['kmeans_5_pred_category'].map(modal_map) # pyright: ignore[]
+    
+    # create the confusion matrix
+    confusion_matrix_kmean5 = confusion_matrix(df['true_category'], df['kmeans_5_pred_category_adj'])
+    print(confusion_matrix_kmean5)
+ 
+    # Convert to LaTeX table
+    confusion_df = pd.DataFrame(confusion_matrix_kmean5)
+    print("\\nLaTeX table:")
+    print(confusion_df.to_latex(index=False, header=False))
+    return kmeans_5.inertia_
 
-kmeans_5 = KMeans(n_clusters=5).fit(X) # because this is using k-means++ sampling there is only one run, so lowest inertia is just the inertia of the output
-print(f'Lowest inertia: {kmeans_5.inertia_}')
-df['kmeans_5_pred_category'] = kmeans_5.labels_
+do_kmeans_analysys()
 
-centers = kmeans_5.cluster_centers_
+inertias = []
+for k in range(1,9):
+    inertia = do_kmeans_analysys(k)
+    inertias.append(inertia)
 
-# PCA down to 2 dim
-X_pca_2d = PCA(n_components=2).fit(X)
-df[['X_pca_2d_1', 'X_pca_2d_2']] = X_pca_2d.transform(X)
-centers_2d = X_pca_2d.transform(centers)
-
-print(df.head)
-df.to_csv("gausian_blob_processed.csv")
-
-# Plot it
-plt.scatter(df['X_pca_2d_1'], df['X_pca_2d_2'], c=df['kmeans_5_pred_category'], cmap='viridis')
-plt.scatter(centers_2d[:, 0], centers_2d[:, 1], c='red', marker='X', s=200)
-plt.savefig('latex_jail/plots/KMeans_plot.png')
+plt.plot(range(1, 9), inertias, 'bo-')
+plt.xlabel('Number of clusters (k)')
+plt.ylabel('Inertia')
+plt.title('Elbow Method for Optimal k')
+plt.savefig('latex_jail/plots/elbow_plot.png')
 plt.show()
-plt.close()
 
-# now to re-index to match the predicted and real columns
-# going to just take the mode of each match, and if there are no collisions call it good
-
-# Find modal mapping
-modal_map = df.groupby('kmeans_5_pred_category')['true_category'].agg(lambda x: x.mode().iloc[0] if not x.mode().empty else None)
-
-# Check if mapping is one-to-one
-print(modal_map)
-
-# Apply transformation
-df['kmeans_5_pred_category_adj'] = df['kmeans_5_pred_category'].map(modal_map) # pyright: ignore[]
-
-# create the confusion matrix
-confusion_matrix_kmean5 = confusion_matrix(df['true_category'], df['kmeans_5_pred_category_adj'])
-print(confusion_matrix_kmean5)
 
 # %% [markdown] id="a2qcKggmIH8T"
 
@@ -166,6 +189,15 @@ def kmean_confusion_mtx(kmeans=kmeans, y=y):
     # Confusion matrix
     confusion_matrix_kmeans = confusion_matrix(y, kmeans_labels_mapped)
     print(confusion_matrix_kmeans)
+    
+    # Convert to LaTeX table
+    class_names = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                   'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+    confusion_df = pd.DataFrame(confusion_matrix_kmeans)
+    confusion_df.columns = class_names
+    confusion_df.index = class_names
+    print("\\nLaTeX table:")
+    print(confusion_df.to_latex())
 
     total_samples = len(y)
     correct_predictions = np.trace(confusion_matrix_kmeans)
@@ -175,6 +207,8 @@ def kmean_confusion_mtx(kmeans=kmeans, y=y):
     print(f"Correct predictions: {correct_predictions}")
     print(f"Confused entries: {confused_entries}")
     return confused_entries
+
+kmean_confusion_mtx()
     
 # %% [markdown] id="6Bpow7TrZ7iB"
 # # 3. Dimensionality reduction for Fashion-MNIST
@@ -254,7 +288,7 @@ from sklearn.cluster import SpectralClustering
 
 X_reasonable, y_reasonable, a, b = train_test_split(X, y, test_size = .9, random_state = 42)
 
-pca = PCA(n_components=20).fit_transform(X_reasonable)
+pca = PCA(n_components=50).fit_transform(X_reasonable)
 
 
 spectral_clustering = SpectralClustering(n_clusters = 10, assign_labels='kmeans', verbose=True).fit(pca)
