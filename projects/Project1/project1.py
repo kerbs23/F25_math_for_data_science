@@ -21,7 +21,6 @@
 # https://projecteuler.net/
 
 # %% id="y_e6lm_newwd"
-# pyright: basic
 # ruff: noqa: e402
 wd = "/home/magnoliad/Desktop/F2025/math_data_sci/projects/Project1"
 
