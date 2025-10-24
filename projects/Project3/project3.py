@@ -49,7 +49,7 @@ from datetime import datetime
 
 print('Training the test model...')
 start_time = time.time()
-#classifier = MLPClassifier(verbose=True).fit(X_train, y_train)
+#classifier = MLPClassifier(max_iter=10000, verbose=True).fit(X_train, y_train)
 training_time = time.time() - start_time
 print(f'Took {training_time}')
 
@@ -92,7 +92,7 @@ print("\n=== Testing Base Case ===")
 start_time = time.time()
 base_model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                           learning_rate='constant', learning_rate_init=.001, early_stopping=False,
-                          verbose=False)
+                          max_iter=10000, verbose=True)
 base_model.fit(X_train, y_train)
 training_time = time.time() - start_time
 time_taken, accuracy, cm = evaluate_model(base_model, training_time=training_time)
@@ -116,7 +116,7 @@ for n_layers in hidden_layers:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=tuple([100] * n_layers), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -140,7 +140,7 @@ for n_neurons in neurons:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(n_neurons,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -164,7 +164,7 @@ for activation in activations:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation=activation, solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -188,7 +188,7 @@ for solver in solvers:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver=solver,
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -212,7 +212,7 @@ for lr_type in learning_rate:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate=lr_type, learning_rate_init=.001, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -236,7 +236,7 @@ for lr_init in learning_rate_init:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=lr_init, early_stopping=False,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -260,7 +260,7 @@ for early_stop in early_stopping:
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=early_stop,
-                         verbose=False)
+                         max_iter=10000, verbose=True)
     model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
@@ -278,6 +278,32 @@ for early_stop in early_stopping:
         'confusion_matrix': cm
     })
 
+
+print("\n=== Testing The big one ===")
+start_time = time.time()
+model = MLPClassifier(hidden_layer_sizes=(841, 841, 841, 500, 300, 69), activation='relu', solver='adam',
+                     learning_rate='constant', learning_rate_init=.001, early_stopping=True,
+                     max_iter=10000, verbose=True)
+model.fit(X_train, y_train)
+training_time = time.time() - start_time
+time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
+
+results.append({
+    'hidden_layers': 6,
+    'neurons': '841, 841, 841, 500, 300, 69',
+    'activation': 'relu',
+    'solver': 'adam',
+    'learning_rate': 'constant',
+    'learning_rate_init': 0.001,
+    'early_stopping': False,
+    'training_time': time_taken,
+    'accuracy': accuracy,
+    'confusion_matrix': cm
+})
+
+
+
+
 # Save results to CSV
 df = pd.DataFrame(results)
 # Convert confusion matrices to strings for CSV
@@ -287,7 +313,6 @@ csv_filename = f'mlp_results_{timestamp}.csv'
 df.to_csv(csv_filename, index=False)
 print(f"\nResults saved to {csv_filename}")
 print(f"\nTotal models tested: {len(results)}")
-print("\nSummary:")
 print(df[['hidden_layers', 'neurons', 'activation', 'solver', 'learning_rate', 'learning_rate_init', 'early_stopping', 'accuracy', 'training_time']])
 
 # %% [markdown] id="a2qcKggmIH8T"
