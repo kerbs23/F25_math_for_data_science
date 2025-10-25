@@ -24,6 +24,7 @@
 from cProfile import label
 from tensorflow.keras.datasets import fashion_mnist #pyright: ignore
 from sklearn.preprocessing import StandardScaler
+from torch.nn.init import _calculate_correct_fan
 
 # Load Fashion-MNIST
 # Classes (0-9): T-shirt/top, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot
@@ -50,7 +51,9 @@ logging.basicConfig(filename='debug.log', level=logging.INFO,
 
 
 
+'''
 logging.info('Training the test model...')
+print('Training the test model...')
 start_time = time.time()
 #classifier = MLPClassifier(max_iter=10000, verbose=True).fit(X_train, y_train)
 training_time = time.time() - start_time
@@ -327,6 +330,10 @@ logging.info(f"\nResults saved to {csv_filename}")
 logging.info(f"\nTotal models tested: {len(results)}")
 logging.info(df[['hidden_layers', 'neurons', 'activation', 'solver', 'learning_rate', 'learning_rate_init', 'early_stopping', 'accuracy', 'training_time']])
 
+
+'''
+
+
 # %% [markdown] id="a2qcKggmIH8T"
 # # 3. Fashion-MNIST image classification  using pytorch
 
@@ -362,10 +369,147 @@ test_loader  = DataLoader(test_ds,  batch_size=256, shuffle=False)
 
 # %% id="0REsDBunNmEl"
 import torch.nn as nn
-import torch.optim as optim
+import matplotlib.pyplot as plt
+import logging
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename='torch_crap.log', encoding='utf-8', filemode='w', level=logging.INFO)
+
+
+#%%
 
 # In colab, you should ``change runtime type'' to GPU.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logging.info("Using device:", device)
 
-# your code here
+'''
+# Some boilerplate from the docs to view the dataset. Comments mine
+labels_map = {
+    0: "T-Shirt",
+    1: "Trouser",
+    2: "Pullover",
+    3: "Dress",
+    4: "Coat",
+    5: "Sandal",
+    6: "Shirt",
+    7: "Sneaker",
+    8: "Bag",
+    9: "Ankle Boot",
+}
+figure = plt.figure(figsize=(8, 8))
+cols, rows = 3, 3
+for i in range(1, cols * rows + 1):
+    # Take a random integer on the reported length, and get it as an integer, rather then 1 element torch df
+    sample_idx = torch.randint(len(train_ds), size=(1,)).item()
+    # Use numpy syntax to get the randomly chosen row
+    img, torch_label = train_ds[sample_idx]
+    figure.add_subplot(rows, cols, i)
+    plt.title(labels_map[torch_label.item()]) #pyright: ignore
+    plt.axis("off")
+    plt.imshow(img.squeeze(), cmap="gray")
+plt.show()
+'''
+
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten() #turns the square images into 1 dim
+        self.linear_relu_section = nn.Sequential(#This lets you string together a chain of
+                                               # nn api things together into a single 
+                                               # callable thing
+                                               nn.Linear(28*28, 512), #An affine transform
+                                               #In this case, has 28x28 input layers and
+                                               #512 output layers
+                                               nn.ReLU(), # ReLU all of the inputs
+                                               #Returns the same # of outputs 
+                                               nn.Linear(512, 512),
+                                               nn.ReLU(),
+                                               nn.Linear(512, 10),
+                                               nn.ReLU(),
+                )
+        self.softmax = nn.Softmax(dim=1) # Scales the logits into probabilities
+    def forward(self, x): # Defines the order in which to call the things as we do a
+        # forward pass in the NN
+        x = self.flatten(x)
+        logits = self.linear_relu_section(x)
+        probabilities = self.softmax(logits)
+        return probabilities
+
+model = NeuralNetwork().to(device)
+print(f"Model structure: {model}\n\n")
+
+for name, param in model.named_parameters():
+    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+
+
+
+# Hyperparamaters for training
+learning_rate = .001
+batch_size = 64
+epochs = 5
+
+# the loss function is just an nn. method that we pass the crap to
+loss_fn = nn.NLLLoss()
+# similar for the optimizer
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+def train_loop(dataloader, model, loss_fn, optimizer):
+    train_time = time.time()
+    logging.debug(f'{train_time}: started a training loop')
+    size = len(dataloader.dataset)
+    # Set the model to training mode-- a best practice
+    model.train()
+    for batch, (X, y) in enumerate(dataloader): # Recall dataloaders are a set of a couple
+        # samples in the data. So this is saying essentially for each of the bach, set the
+        # X and y properly
+        batch_time = time.time()
+        logging.debug(f'{batch_time}: Starting a batch loop')
+        pred = model(X)
+        loss = loss_fn(pred, y)
+
+        loss.backward() # use the mega-differentiation thing to compute the gradients for
+        # the whole nn
+        optimizer.step() # take a step in the right direction
+        optimizer.zero_grad() # we have to manually 0 the gradient each time
+        done_time = time.time()
+        loss, current, taken=loss.item(),batch * batch_size + len(X),done_time-batch_time
+        logging.debug(f'{done_time}: finished this batch, loss: {loss:>7f} [{current:>5d}/{size:>5d}], Took {taken}')
+    done_time = time.time()
+    logging.debug(f'{done_time}: completed training, took {train_time-done_time}')
+
+def test_loop(dataloader, model, loss_fn):
+    model.eval() # set to evaluate mode
+    size = len(dataloader.dataset)
+    num_batches = len(dataloader)
+    test_loss, correct = 0, 0
+
+    with torch.no_grad(): # An optimization so as to not keep track of grad while testing
+        for X, y in dataloader:
+            pred = model (X)
+            test_loss += loss_fn(pred, y).item()
+            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+            
+
+    test_loss /= num_batches
+    correct /= size
+    print(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+    logger.debug(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+
+
+
+epochs = 100
+start_time = time.time()
+print(f'Started training at {start_time}')
+logger.info(f'Started training at {start_time}')
+
+for t in range(epochs):
+    logger.debug(f'Epoch {t}\n======================================')
+    train_loop(train_loader, model, loss_fn, optimizer)
+    test_loop(val_loader, model, loss_fn)
+done_time = time.time()
+print(f'{done_time}: finished training. Took {done_time-start_time}\n')
+logger.info(f'{done_time}: finished training. Took {done_time-start_time}\n')
+test_loop(test_loader, model, loss_fn)
+
+
+
+
