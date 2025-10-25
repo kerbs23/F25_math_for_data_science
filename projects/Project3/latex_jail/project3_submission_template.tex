@@ -40,6 +40,22 @@ I gave them all 10,000 iterations to try to converge to a tolerance of .001, and
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Pytorch}
 
+Looks like I get a lot more fine-grained control of how each part of the model works.
+Stack together all the different bits into a class, then run the training stuff back and forth over it in a loop.
+Then, serialize the model and save it to the disk, so it can be re-loaded for testing.
+
+It looks like there is a specific data structure that is functionally a matrix but in such a way that it can be GPUificated.
+For all purposes appears to be the same as the numpy arrays we were using with sklearn.
+
+These are managed by two things: a dataset which is defined as a class that has some sort of setup, a way to return the length of the dataset, and some way to load in one item of the data.
+This is done for us with Fashion-MNIST, but they give an example of how to set up a custom one.
+Then, dataloaders work over the datasets to efficently load in little random chunks for the training.
+
+NeuralNets are built as a part of a class, with an init section where they are defined with a series of steps including a head layer and the hidden layers and a forward section where you call the init functions in the "forward" order
+Then, you use the different parts of the nn package to set up phe different operations, such as layers, functions, ect
+
+
+
 
 
 
