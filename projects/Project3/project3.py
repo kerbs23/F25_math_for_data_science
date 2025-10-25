@@ -43,15 +43,18 @@ import time
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import threadpoolctl
+import logging
+logging.basicConfig(filename='debug.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 
-
-print('Training the test model...')
+logging.info('Training the test model...')
 start_time = time.time()
 #classifier = MLPClassifier(max_iter=10000, verbose=True).fit(X_train, y_train)
 training_time = time.time() - start_time
-print(f'Took {training_time}')
+logging.info(f'Took {training_time}')
 
 def evaluate_model(model, X_test = X_test, y_test = y_test, training_time = training_time):
     labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -59,9 +62,9 @@ def evaluate_model(model, X_test = X_test, y_test = y_test, training_time = trai
 
     y_pred = model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred=y_pred, normalize=True)
-    print(classification_report(y_test, y_pred, labels=labels, target_names=target_names))
+    logging.info(classification_report(y_test, y_pred, labels=labels, target_names=target_names))
     cm = confusion_matrix(y_test, y_pred)
-    print(confusion_matrix)
+    logging.info(cm)
     return training_time, accuracy, cm
 
 
@@ -88,12 +91,13 @@ early_stopping = [True]
 results = []
 
 # Test base case first
-print("\n=== Testing Base Case ===")
+logging.info("\n=== Testing Base Case ===")
 start_time = time.time()
 base_model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                           learning_rate='constant', learning_rate_init=.001, early_stopping=False,
                           max_iter=10000, verbose=True)
-base_model.fit(X_train, y_train)
+with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+    base_model.fit(X_train, y_train)
 training_time = time.time() - start_time
 time_taken, accuracy, cm = evaluate_model(base_model, training_time=training_time)
 
@@ -112,12 +116,13 @@ results.append({
 
 # Test hidden layers
 for n_layers in hidden_layers:
-    print(f"\n=== Testing {n_layers} hidden layers ===")
+    logging.info(f"\n=== Testing {n_layers} hidden layers ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=tuple([100] * n_layers), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -136,12 +141,13 @@ for n_layers in hidden_layers:
 
 # Test neurons
 for n_neurons in neurons:
-    print(f"\n=== Testing {n_neurons} neurons ===")
+    logging.info(f"\n=== Testing {n_neurons} neurons ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(n_neurons,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -160,12 +166,13 @@ for n_neurons in neurons:
 
 # Test activations
 for activation in activations:
-    print(f"\n=== Testing {activation} activation ===")
+    logging.info(f"\n=== Testing {activation} activation ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation=activation, solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -184,12 +191,13 @@ for activation in activations:
 
 # Test solvers
 for solver in solvers:
-    print(f"\n=== Testing {solver} solver ===")
+    logging.info(f"\n=== Testing {solver} solver ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver=solver,
                          learning_rate='constant', learning_rate_init=.001, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -208,12 +216,13 @@ for solver in solvers:
 
 # Test learning rate types
 for lr_type in learning_rate:
-    print(f"\n=== Testing {lr_type} learning rate ===")
+    logging.info(f"\n=== Testing {lr_type} learning rate ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate=lr_type, learning_rate_init=.001, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -232,12 +241,13 @@ for lr_type in learning_rate:
 
 # Test learning rate initializations
 for lr_init in learning_rate_init:
-    print(f"\n=== Testing {lr_init} learning rate init ===")
+    logging.info(f"\n=== Testing {lr_init} learning rate init ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=lr_init, early_stopping=False,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -256,12 +266,13 @@ for lr_init in learning_rate_init:
 
 # Test early stopping
 for early_stop in early_stopping:
-    print(f"\n=== Testing early_stopping={early_stop} ===")
+    logging.info(f"\n=== Testing early_stopping={early_stop} ===")
     start_time = time.time()
     model = MLPClassifier(hidden_layer_sizes=(100,), activation='relu', solver='sgd',
                          learning_rate='constant', learning_rate_init=.001, early_stopping=early_stop,
                          max_iter=10000, verbose=True)
-    model.fit(X_train, y_train)
+    with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+        model.fit(X_train, y_train)
     training_time = time.time() - start_time
     time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
     
@@ -279,12 +290,13 @@ for early_stop in early_stopping:
     })
 
 
-print("\n=== Testing The big one ===")
+logging.info("\n=== Testing The big one ===")
 start_time = time.time()
 model = MLPClassifier(hidden_layer_sizes=(841, 841, 841, 500, 300, 69), activation='relu', solver='adam',
                      learning_rate='constant', learning_rate_init=.001, early_stopping=True,
                      max_iter=10000, verbose=True)
-model.fit(X_train, y_train)
+with threadpoolctl.threadpool_limits(limits=8): # Use only 8 cores to avoid domestic trouble
+    model.fit(X_train, y_train)
 training_time = time.time() - start_time
 time_taken, accuracy, cm = evaluate_model(model, training_time=training_time)
 
@@ -299,7 +311,7 @@ results.append({
     'training_time': time_taken,
     'accuracy': accuracy,
     'confusion_matrix': cm
-})
+    })
 
 
 
@@ -311,9 +323,9 @@ df['confusion_matrix'] = df['confusion_matrix'].apply(lambda x: str(x).replace('
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 csv_filename = f'mlp_results_{timestamp}.csv'
 df.to_csv(csv_filename, index=False)
-print(f"\nResults saved to {csv_filename}")
-print(f"\nTotal models tested: {len(results)}")
-print(df[['hidden_layers', 'neurons', 'activation', 'solver', 'learning_rate', 'learning_rate_init', 'early_stopping', 'accuracy', 'training_time']])
+logging.info(f"\nResults saved to {csv_filename}")
+logging.info(f"\nTotal models tested: {len(results)}")
+logging.info(df[['hidden_layers', 'neurons', 'activation', 'solver', 'learning_rate', 'learning_rate_init', 'early_stopping', 'accuracy', 'training_time']])
 
 # %% [markdown] id="a2qcKggmIH8T"
 # # 3. Fashion-MNIST image classification  using pytorch
@@ -354,6 +366,6 @@ import torch.optim as optim
 
 # In colab, you should ``change runtime type'' to GPU.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print("Using device:", device)
+logging.info("Using device:", device)
 
 # your code here
