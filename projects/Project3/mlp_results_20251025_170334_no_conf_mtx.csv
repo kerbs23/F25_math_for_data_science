@@ -1,0 +1,21 @@
+hidden_layers,neurons,activation,solver,learning_rate,learning_rate_init,early_stopping,training_time,accuracy
+1,"100",relu,sgd,constant,0.001,False,251.09755682945251,0.8807
+2,"100",relu,sgd,constant,0.001,False,198.17222666740417,0.8721
+4,"100",relu,sgd,constant,0.001,False,168.52051615715027,0.8735
+8,"100",relu,sgd,constant,0.001,False,174.95713806152344,0.869
+16,"100",relu,sgd,constant,0.001,False,274.832635641098,0.8581
+1,"20",relu,sgd,constant,0.001,False,155.7820644378662,0.852
+1,"50",relu,sgd,constant,0.001,False,263.3890690803528,0.8704
+1,"200",relu,sgd,constant,0.001,False,379.7335412502289,0.8862
+1,"500",relu,sgd,constant,0.001,False,730.3306760787964,0.8921
+1,"100",logistic,sgd,constant,0.001,False,627.0255396366119,0.88
+1,"100",tanh,sgd,constant,0.001,False,282.7163245677948,0.8773
+1,"100",relu,adam,constant,0.001,False,41.16398096084595,0.8756
+1,"100",relu,lbfgs,constant,0.001,False,85.86618614196777,0.8745
+1,"100",relu,sgd,invscaling,0.001,False,15.668065309524536,0.788
+1,"100",relu,sgd,adaptive,0.001,False,288.13006234169006,0.8798
+1,"100",relu,sgd,constant,0.1,False,18.386075735092163,0.8704
+1,"100",relu,sgd,constant,0.01,False,67.6326973438263,0.8824
+1,"100",relu,sgd,constant,0.0001,False,521.4695470333099,0.8814
+1,"100",relu,sgd,constant,0.001,True,28.59324288368225,0.8783
+6,"841, 841, 841, 500, 300, 69",relu,adam,constant,0.001,False,238.11026406288147,0.8914

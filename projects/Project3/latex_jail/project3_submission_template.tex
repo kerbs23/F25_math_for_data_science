@@ -1,8 +1,10 @@
-
+\documentclass{article}
 
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{amsmath, amssymb, amsfonts}
+\usepackage{csvsimple}
+\usepackage{pdflscape}
 
 \usepackage{color}
 \usepackage[colorlinks=true,linkcolor=red,citecolor=blue,urlcolor=cyan]{hyperref}
@@ -21,7 +23,7 @@
 \noindent {\bf Bob Stutchbury} \\ 
 Math 5750/6880: Mathematics of Data Science \\  
 Project \#3 Final Report \\ 
-\today \\ }
+\today \\
 
 
 \noindent \replace{My GitHub Project3 repository is located here:
@@ -34,8 +36,19 @@ Project \#3 Final Report \\
 \section{Fashion-MNIST image classification using sklearn}
 I went through and went through and, after establishing a base case that is very similar to the default settints, changed a bunch of the settings one at a time, looking at their scores and how long they took to converge, as well as a large one based off a preliminary run.
 I gave them all 10,000 iterations to try to converge to a tolerance of .001, and let it spin for a while.
+Once they finished, I tested them on the test set and got the final score, as reported on the following page.
+
+I used this to train a final model with 6 hidden layers, of [841, 841, 841, 500, 300, 69 layers respectively.
+This took about 4 minutes to train on the web machines, and resulted in a test accuraccy of .891, the best of any of the models (but not remarkably better then the other, smaller, faster iterations of the model)
+It resulted in the following confusion matrix:
+
+\csvautotabular[respect all]{/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/big_sklearn_cm.csv}
+
+\begin{landscape}
+\csvautotabular[respect all]{/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/mlp_results_20251025_170334_no_conf_mtx.csv}
 
 
+\end{landscape}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Pytorch}
@@ -55,11 +68,6 @@ NeuralNets are built as a part of a class, with an init section where they are d
 Then, you use the different parts of the nn package to set up phe different operations, such as layers, functions, ect
 It seems like the main organizational task is understanding the different layers' functions, some paramater tuning, and making sure the size of the layers match up
 Then, you set the layers up to define the forward pass by stacking up the init ed functions (methods? I dont really know python this way that well)
-
-
-
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Fashion-MNIST image classification  using PyTorch}

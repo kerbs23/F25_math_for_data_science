@@ -22,8 +22,10 @@
 # ruff: noqa: E402 F401
 
 from cProfile import label
+from turtle import done
 from tensorflow.keras.datasets import fashion_mnist #pyright: ignore
 from sklearn.preprocessing import StandardScaler
+from torch.distributions.independent import D
 from torch.nn.init import _calculate_correct_fan
 
 # Load Fashion-MNIST
@@ -409,107 +411,263 @@ for i in range(1, cols * rows + 1):
 plt.show()
 '''
 
-class NeuralNetwork(nn.Module):
+class SimpleNeuralNetwork(nn.Module):
+    '''Simple 3 layer network to serve as a baseline. Will insert the suggested special functions, and then train them enough times to get a fine estimate of the variance on performance and convergence speed.'''
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten() #turns the square images into 1 dim
         self.linear_relu_section = nn.Sequential(#This lets you string together a chain of
                                                # nn api things together into a single 
                                                # callable thing
-                                               nn.Linear(28*28, 512), #An affine transform
+                                               nn.Linear(784, 784), #An affine transform
                                                #In this case, has 28x28 input layers and
-                                               #512 output layers
+                                               #784 output layers
                                                nn.ReLU(), # ReLU all of the inputs
                                                #Returns the same # of outputs 
-                                               nn.Linear(512, 512),
+                                               nn.Linear(784, 784),
                                                nn.ReLU(),
-                                               nn.Linear(512, 10),
-                                               nn.ReLU(),
+                                               nn.Linear(784, 10),
                 )
         self.softmax = nn.Softmax(dim=1) # Scales the logits into probabilities
     def forward(self, x): # Defines the order in which to call the things as we do a
         # forward pass in the NN
         x = self.flatten(x)
         logits = self.linear_relu_section(x)
-        probabilities = self.softmax(logits)
-        return probabilities
-
-model = NeuralNetwork().to(device)
-print(f"Model structure: {model}\n\n")
-
-for name, param in model.named_parameters():
-    print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+        return logits
 
 
+class BigNeuralNetwork(nn.Module):
+    '''like the simple one, but twice as big'''
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten() #turns the square images into 1 dim
+        self.linear_relu_section = nn.Sequential(#This lets you string together a chain of
+                                               # nn api things together into a single 
+                                               # callable thing
+                                               nn.Linear(28*28, 784), #An affine transform
+                                               #In this case, has 28x28 input layers and
+                                               #784 output layers
+                                               nn.ReLU(), # ReLU all of the inputs
+                                               #Returns the same # of outputs 
+                                               nn.Linear(784, 784),
+                                               nn.ReLU(),
+                                               nn.Linear(784, 784),
+                                               nn.ReLU(),
+                                               nn.Linear(784, 784),
+                                               nn.ReLU(),
+                                               nn.Linear(784, 784),
+                                               nn.ReLU(),
+                                               nn.Linear(784, 10),
+                )
+        self.softmax = nn.Softmax(dim=1) # Scales the logits into probabilities
+    def forward(self, x): # Defines the order in which to call the things as we do a
+        # forward pass in the NN
+        x = self.flatten(x)
+        logits = self.linear_relu_section(x)
+        return logits
 
-# Hyperparamaters for training
-learning_rate = .001
-batch_size = 64
-epochs = 5
 
-# the loss function is just an nn. method that we pass the crap to
-loss_fn = nn.NLLLoss()
-# similar for the optimizer
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+class ImageNeuralNetwork(nn.Module):
+    '''Add 2 layers of alternating convolution and maxpool for some image processing specific things. considerably more weights, so this will probably take a while.'''
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten() #turns the square images into 1 dim
+        self.linear_relu_section = nn.Sequential(#This lets you string together a chain of
+                                               # nn api things together into a single 
+                                               # callable thing
+                                               nn.Linear(1568, 784), #An affine transform
+                                               #In this case, has 28x28 input layers and
+                                               #784 output layers
+                                               nn.ReLU(), # ReLU all of the inputs
+                                               #Returns the same # of outputs 
+                                               nn.Linear(784, 784),
+                                               nn.ReLU(),
+                                               nn.Linear(784, 10),
+                )
+        self.imglayer1 = nn.Sequential(
+                nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.MaxPool2d(2))
+        self.imglayer2 = nn.Sequential(
+                nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1),
+                nn.ReLU(),
+                nn.MaxPool2d(2))
+        self.softmax = nn.Softmax(dim=1) # Scales the logits into probabilities
+    def forward(self, x): # Defines the order in which to call the things as we do a
+        # forward pass in the NN
+        x = self.imglayer1(x)
+        x = self.imglayer2(x)
+        x = self.flatten(x)
+        logits = self.linear_relu_section(x)
+        return logits
 
-def train_loop(dataloader, model, loss_fn, optimizer):
-    train_time = time.time()
-    logging.debug(f'{train_time}: started a training loop')
-    size = len(dataloader.dataset)
-    # Set the model to training mode-- a best practice
-    model.train()
-    for batch, (X, y) in enumerate(dataloader): # Recall dataloaders are a set of a couple
-        # samples in the data. So this is saying essentially for each of the bach, set the
-        # X and y properly
-        batch_time = time.time()
-        logging.debug(f'{batch_time}: Starting a batch loop')
-        pred = model(X)
-        loss = loss_fn(pred, y)
 
-        loss.backward() # use the mega-differentiation thing to compute the gradients for
-        # the whole nn
-        optimizer.step() # take a step in the right direction
-        optimizer.zero_grad() # we have to manually 0 the gradient each time
-        done_time = time.time()
-        loss, current, taken=loss.item(),batch * batch_size + len(X),done_time-batch_time
-        logging.debug(f'{done_time}: finished this batch, loss: {loss:>7f} [{current:>5d}/{size:>5d}], Took {taken}')
-    done_time = time.time()
-    logging.debug(f'{done_time}: completed training, took {train_time-done_time}')
 
-def test_loop(dataloader, model, loss_fn):
-    model.eval() # set to evaluate mode
-    size = len(dataloader.dataset)
-    num_batches = len(dataloader)
-    test_loss, correct = 0, 0
 
-    with torch.no_grad(): # An optimization so as to not keep track of grad while testing
-        for X, y in dataloader:
-            pred = model (X)
-            test_loss += loss_fn(pred, y).item()
-            correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+def test_architecture(model_type='simple'):
+
+    DEBUG_MODE = False
+
+    if   model_type == 'simple' :
+        model = SimpleNeuralNetwork().to(device)
+    elif model_type == 'big':
+        model = BigNeuralNetwork().to(device)
+    elif model_type == 'image':
+        model = ImageNeuralNetwork().to(device)
+
+    print(f"Model structure: {model}\n\n")
+
+    if DEBUG_MODE:
+        for name, param in model.named_parameters():
+            print(f"Layer: {name} | Size: {param.size()} | Values : {param[:2]} \n")
+    
+    
+    
+    # Hyperparamaters for training
+    learning_rate = .001
+    batch_size = 64
+    # the loss function is just an nn. method that we pass the crap to
+    loss_fn = nn.CrossEntropyLoss()
+    # similar for the optimizer
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, nesterov=True)
+    
+    def train_loop(dataloader, model, loss_fn, optimizer):
+
+        if DEBUG_MODE:
+            train_time = time.time()
+            logging.debug(f'{train_time}: started a training loop')
+            size = len(dataloader.dataset)
+        # Set the model to training mode-- a best practice
+        model.train()
+        for batch, (X, y) in enumerate(dataloader): # Recall dataloaders are a set of a couple
+            # samples in the data. So this is saying essentially for each of the bach, set the
+            # X and y properly
+            if DEBUG_MODE:
+                batch_time = time.time()
+                logging.debug(f'{batch_time}: Starting a batch loop')
+            pred = model(X)
+            loss = loss_fn(pred, y)
+    
+            loss.backward() # use the mega-differentiation thing to compute the gradients for
+            # the whole nn
+            optimizer.step() # take a step in the right direction
+            optimizer.zero_grad() # we have to manually 0 the gradient each time
+            if DEBUG_MODE:
+                done_time = time.time()
+                loss, current, taken=loss.item(),batch * batch_size + len(X),done_time-batch_time
+                logging.debug(f'{done_time}: finished this batch, loss: {loss:>7f} [{current:>5d}/{size:>5d}], Took {taken}')
+        if DEBUG_MODE:
+            done_time = time.time()
+            logging.debug(f'{done_time}: completed training, took {train_time-done_time}')
+    
+    def test_loop(dataloader, model, loss_fn):
+        model.eval() # set to evaluate mode
+        size = len(dataloader.dataset)
+        num_batches = len(dataloader)
+        test_loss, correct = 0, 0
+    
+        with torch.no_grad(): # An optimization so as to not keep track of grad while testing
+            for X, y in dataloader:
+                pred = model (X)
+                test_loss += loss_fn(pred, y).item()
+                correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+                
+    
+        test_loss /= num_batches
+        correct /= size
+        print(f'Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+        logger.debug(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+        return test_loss
+    
+    def test_loop_with_cm(dataloader, model, loss_fn):
+        model.eval() # set to evaluate mode
+        size = len(dataloader.dataset)
+        num_batches = len(dataloader)
+        test_loss, correct = 0, 0
+    
+        #initialize the cm tensor
+        cm = torch.zeros(10, 10, dtype=torch.int32)
+
+        with torch.no_grad(): # An optimization so as to not keep track of grad while testing
+            for X, y in dataloader:
+                pred = model (X)
+                test_loss += loss_fn(pred, y).item()
+                correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+                pred_class = pred.argmax(1)
+
+                for true, pred in zip(y, pred_class):
+                    cm[true, pred] += 1
+    
+        test_loss /= num_batches
+        correct /= size
+        print(f'Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+        logger.debug(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
+        return cm.numpy(), correct, test_loss
+    
+
+    
+    epochs = 1000
+    start_time = time.time()
+    print(f'Started training at {start_time}')
+    logger.info(f'Started training at {start_time}')
+    best_loss = float('inf')
+    patience_counter = 0
+    
+    for t in range(epochs):
+        print(f'Epoch {t}\n======================================')
+
+        logger.debug(f'Epoch {t}\n======================================')
+        train_loop(train_loader, model, loss_fn, optimizer)
+        current_loss = test_loop(val_loader, model, loss_fn)
+
+        # Early stopping check
+        # Considired done if no improvement on test data greater then .0001 for 10 epochs
+        if current_loss < best_loss - .001:
+            best_loss = current_loss
+            patience_counter = 0
+        else:
+            patience_counter += 1
             
+        if patience_counter >= 20:
+            print(f'Early stopping at epoch {t} - no improvement for 10 epochs')
+            logger.info(f'Early stopping at epoch {t} - no improvement for 10 epochs')
+            break
+    
 
-    test_loss /= num_batches
-    correct /= size
-    print(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
-    logger.debug(f'Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n')
-
-
-
-epochs = 100
-start_time = time.time()
-print(f'Started training at {start_time}')
-logger.info(f'Started training at {start_time}')
-
-for t in range(epochs):
-    logger.debug(f'Epoch {t}\n======================================')
-    train_loop(train_loader, model, loss_fn, optimizer)
-    test_loop(val_loader, model, loss_fn)
-done_time = time.time()
-print(f'{done_time}: finished training. Took {done_time-start_time}\n')
-logger.info(f'{done_time}: finished training. Took {done_time-start_time}\n')
-test_loop(test_loader, model, loss_fn)
+    done_time = time.time()
+    total_train_time = done_time - start_time
+    print(f'{done_time}: finished training. Took {done_time-start_time}\n')
+    logger.info(f'{done_time}: finished training. Took {done_time-start_time}\n')
+    cm, correct, test_loss =test_loop_with_cm(test_loader, model, loss_fn)
+    return cm, correct, test_loss, total_train_time
 
 
+#%%
 
+results = []
 
+for run in range(0, 4):
+    model = 'simple' #simple, big, image
+    cm, correct, test_loss, total_train_time = test_architecture(model)
+    results.append({
+        'run': run,
+        'model': model,
+        'portion_correct': correct,
+        'test_loss': test_loss,
+        'total_train_time': total_train_time,
+        'confusion_matrix': cm,
+        })
+    
+    # Save results to CSV
+    df = pd.DataFrame(results)
+    # Convert confusion matrices to strings for CSV
+    df['confusion_matrix'] = df['confusion_matrix'].apply(lambda x: str(x).replace('\n', ';'))
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    csv_filename = f'torch_results/{model}_{run}_{timestamp}.csv'
+    df.to_csv(csv_filename, index=False)
+    logging.info(f"\nResults saved to {csv_filename}")
+    
+    
+    
+    
+    
