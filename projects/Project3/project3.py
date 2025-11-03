@@ -25,7 +25,6 @@ from cProfile import label
 from turtle import done
 from tensorflow.keras.datasets import fashion_mnist #pyright: ignore
 from sklearn.preprocessing import StandardScaler
-from torch.distributions.independent import D
 from torch.nn.init import _calculate_correct_fan
 
 # Load Fashion-MNIST
@@ -381,7 +380,7 @@ logging.basicConfig(filename='torch_crap.log', encoding='utf-8', filemode='w', l
 
 # In colab, you should ``change runtime type'' to GPU.
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-logging.info("Using device:", device)
+print("Using device:", device)
 
 '''
 # Some boilerplate from the docs to view the dataset. Comments mine
@@ -475,7 +474,7 @@ class ImageNeuralNetwork(nn.Module):
         self.linear_relu_section = nn.Sequential(#This lets you string together a chain of
                                                # nn api things together into a single 
                                                # callable thing
-                                               nn.Linear(1568, 784), #An affine transform
+                                               nn.Linear(32*32*7*7, 784), #An affine transform
                                                #In this case, has 28x28 input layers and
                                                #784 output layers
                                                nn.ReLU(), # ReLU all of the inputs
@@ -489,7 +488,7 @@ class ImageNeuralNetwork(nn.Module):
                 nn.ReLU(),
                 nn.MaxPool2d(2))
         self.imglayer2 = nn.Sequential(
-                nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1),
+                nn.Conv2d(in_channels=32, out_channels=32*32, kernel_size=3, padding=1),
                 nn.ReLU(),
                 nn.MaxPool2d(2))
         self.softmax = nn.Softmax(dim=1) # Scales the logits into probabilities
@@ -525,11 +524,12 @@ def test_architecture(model_type='simple'):
     
     # Hyperparamaters for training
     learning_rate = .001
+    momentum = .9
     batch_size = 64
     # the loss function is just an nn. method that we pass the crap to
     loss_fn = nn.CrossEntropyLoss()
     # similar for the optimizer
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, nesterov=True)
+    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, nesterov=True)
     
     def train_loop(dataloader, model, loss_fn, optimizer):
 
@@ -542,6 +542,7 @@ def test_architecture(model_type='simple'):
         for batch, (X, y) in enumerate(dataloader): # Recall dataloaders are a set of a couple
             # samples in the data. So this is saying essentially for each of the bach, set the
             # X and y properly
+            X, y = X.to(device), y.to(device)
             if DEBUG_MODE:
                 batch_time = time.time()
                 logging.debug(f'{batch_time}: Starting a batch loop')
@@ -568,6 +569,7 @@ def test_architecture(model_type='simple'):
     
         with torch.no_grad(): # An optimization so as to not keep track of grad while testing
             for X, y in dataloader:
+                X, y = X.to(device), y.to(device)
                 pred = model (X)
                 test_loss += loss_fn(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
@@ -590,6 +592,7 @@ def test_architecture(model_type='simple'):
 
         with torch.no_grad(): # An optimization so as to not keep track of grad while testing
             for X, y in dataloader:
+                X, y = X.to(device), y.to(device)
                 pred = model (X)
                 test_loss += loss_fn(pred, y).item()
                 correct += (pred.argmax(1) == y).type(torch.float).sum().item()
@@ -622,13 +625,13 @@ def test_architecture(model_type='simple'):
 
         # Early stopping check
         # Considired done if no improvement on test data greater then .0001 for 10 epochs
-        if current_loss < best_loss - .001:
+        if current_loss < best_loss - .0001:
             best_loss = current_loss
             patience_counter = 0
         else:
             patience_counter += 1
             
-        if patience_counter >= 20:
+        if patience_counter >= 30:
             print(f'Early stopping at epoch {t} - no improvement for 10 epochs')
             logger.info(f'Early stopping at epoch {t} - no improvement for 10 epochs')
             break
@@ -645,29 +648,30 @@ def test_architecture(model_type='simple'):
 #%%
 
 results = []
+models = ['image']
 
-for run in range(0, 4):
-    model = 'simple' #simple, big, image
-    cm, correct, test_loss, total_train_time = test_architecture(model)
-    results.append({
-        'run': run,
-        'model': model,
-        'portion_correct': correct,
-        'test_loss': test_loss,
-        'total_train_time': total_train_time,
-        'confusion_matrix': cm,
-        })
-    
-    # Save results to CSV
-    df = pd.DataFrame(results)
-    # Convert confusion matrices to strings for CSV
-    df['confusion_matrix'] = df['confusion_matrix'].apply(lambda x: str(x).replace('\n', ';'))
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    csv_filename = f'torch_results/{model}_{run}_{timestamp}.csv'
-    df.to_csv(csv_filename, index=False)
-    logging.info(f"\nResults saved to {csv_filename}")
-    
-    
+for model in models:
+    for run in range(0, 4):
+        cm, correct, test_loss, total_train_time = test_architecture(model)
+        results.append({
+            'run': run,
+            'model': model,
+            'portion_correct': correct,
+            'test_loss': test_loss,
+            'total_train_time': total_train_time,
+            'confusion_matrix': cm,
+            })
+        
+        # Save results to CSV
+        df = pd.DataFrame(results)
+        # Convert confusion matrices to strings for CSV
+        df['confusion_matrix'] = df['confusion_matrix'].apply(lambda x: str(x).replace('\n', ';'))
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f'torch_results/{model}_{run}_{timestamp}.csv'
+        df.to_csv(csv_filename, index=False)
+        logging.info(f"\nResults saved to {csv_filename}")
+        
+        
     
     
     
