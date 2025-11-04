@@ -95,3 +95,26 @@ Results saved to torch_results/big_2_20251103_142359.csv
 Results saved to torch_results/big_3_20251103_142457.csv
 2025-11-03 14:24:57,337 - INFO - Started training at 1762205097.337881
 2025-11-03 16:28:21,238 - INFO - Started training at 1762212501.2388651
+2025-11-03 16:59:02,898 - INFO - Early stopping at epoch 104 - no improvement for 10 epochs
+2025-11-03 16:59:02,899 - INFO - 1762214342.899448: finished training. Took 1841.660582780838
+
+2025-11-03 16:59:04,273 - INFO - 
+Results saved to torch_results/image_0_20251103_165904.csv
+2025-11-03 16:59:04,441 - INFO - Started training at 1762214344.441472
+2025-11-03 17:27:21,729 - INFO - Early stopping at epoch 95 - no improvement for 10 epochs
+2025-11-03 17:27:21,731 - INFO - 1762216041.7316062: finished training. Took 1697.290134191513
+
+2025-11-03 17:27:23,068 - INFO - 
+Results saved to torch_results/image_1_20251103_172723.csv
+2025-11-03 17:27:23,236 - INFO - Started training at 1762216043.2366455
+2025-11-03 17:57:26,692 - INFO - Early stopping at epoch 101 - no improvement for 10 epochs
+2025-11-03 17:57:26,693 - INFO - 1762217846.6937187: finished training. Took 1803.45707321167
+
+2025-11-03 17:57:28,039 - INFO - 
+Results saved to torch_results/image_2_20251103_175728.csv
+2025-11-03 17:57:28,207 - INFO - Started training at 1762217848.2075636
+2025-11-03 18:23:06,505 - INFO - Early stopping at epoch 86 - no improvement for 10 epochs
+2025-11-03 18:23:06,507 - INFO - 1762219386.5077739: finished training. Took 1538.300210237503
+
+2025-11-03 18:23:07,842 - INFO - 
+Results saved to torch_results/image_3_20251103_182307.csv
