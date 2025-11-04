@@ -523,13 +523,11 @@ def test_architecture(model_type='simple'):
     
     
     # Hyperparamaters for training
-    learning_rate = .001
-    momentum = .9
     batch_size = 64
     # the loss function is just an nn. method that we pass the crap to
     loss_fn = nn.CrossEntropyLoss()
     # similar for the optimizer
-    optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, nesterov=True)
+    optimizer = torch.optim.Adam(model.parameters())
     
     def train_loop(dataloader, model, loss_fn, optimizer):
 
@@ -625,7 +623,7 @@ def test_architecture(model_type='simple'):
 
         # Early stopping check
         # Considired done if no improvement on test data greater then .0001 for 10 epochs
-        if current_loss < best_loss - .0001:
+        if current_loss < best_loss:
             best_loss = current_loss
             patience_counter = 0
         else:
@@ -648,10 +646,10 @@ def test_architecture(model_type='simple'):
 #%%
 
 results = []
-models = ['image']
+models = ['simple', 'big', 'image']
 
 for model in models:
-    for run in range(0, 4):
+    for run in range(0, 6):
         cm, correct, test_loss, total_train_time = test_architecture(model)
         results.append({
             'run': run,
