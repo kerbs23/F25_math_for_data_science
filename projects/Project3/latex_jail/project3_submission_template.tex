@@ -39,7 +39,7 @@ I gave them all 10,000 iterations to try to converge to a tolerance of .001, and
 Once they finished, I tested them on the test set and got the final score, as reported on the following page.
 
 I used this to train a final model with 6 hidden layers, of [841, 841, 841, 500, 300, 69 layers respectively.
-This took about 4 minutes to train on the web machines, and resulted in a test accuraccy of .891, the best of any of the models (but not remarkably better then the other, smaller, faster iterations of the model)
+This took about 4 minutes to train on the web machines, and resulted in a test accuracy of .891, the best of any of the models (but not remarkably better then the other, smaller, faster iterations of the model)
 It resulted in the following confusion matrix:
 
 \csvautotabular[respect all]{/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/big_sklearn_cm.csv}
@@ -71,9 +71,24 @@ Then, you set the layers up to define the forward pass by stacking up the init e
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Fashion-MNIST image classification  using PyTorch}
-\DAR{Your solution goes here.}
+
+There was just so many options on the sklearn stuff, I wasn't sure what to try and test, and I am also dissatisfied with the one observation conclutions in that section.
+Like come on were data scientists we ought to know better
+So, I defined 3 models, and ran them all 8 times overnight to get a better Idea of how the different architecture works.
+I used Nevstrov gradient decent, with a momentum of .9 and a step size of .001.
+I had a stopping rule whereby if we had not gotten more then .0001 below the previous best for 30 iterations, we would stop.
 
 
 
+Note: 95\% student's t for n=8 is 2.3.
+
+
+The simple network is 3 layers of simple linear/relu functions. The performance is unremarkable compared to the sk results, and it trained much faster (likely because we are now on a GPU)
+
+The big network is 6 layers of linear/relu, I just tried to make the simple one twice as "long". It does not preform significantly different from the simple network, but was stopped much faster.
+This suggests to me the stopping rule is too strict for this large a model, but the image layer's consistently better performance suggests otherwise.
+"Further research is required" type moment.
+
+The image network is like the simple network, but with 2 alternating sections of convolution (learnable interaction between adjacent pixels) and maxpool (deterministic dim reduction) added to the front. Took much longer to converge, but did barely statisticaly better then the other models.
 
 \end{document}

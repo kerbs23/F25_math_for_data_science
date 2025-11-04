@@ -1,0 +1,4 @@
+model,count,portion_correct_avg,portion_correct_stdev,test_loss_avg,test_loss_stdev,total_train_time_avg,total_train_time_stdev
+simple,6,0.89,0.00,0.58,0.02,24.97,1.44
+big,6,0.89,0.00,0.55,0.04,40.96,2.21
+image,6,0.92,0.00,0.58,0.03,681.79,16.18
