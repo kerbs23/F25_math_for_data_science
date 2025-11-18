@@ -176,6 +176,7 @@ INPUT /usr/share/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm
 INPUT /home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/big_sklearn_cm.csv
 INPUT /var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map
 INPUT /home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/mlp_results_20251025_170334_no_conf_mtx.csv
+INPUT /home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/torch_results/merged_results_adam_model_preformance.csv
 INPUT project3_submission_template.aux
 INPUT ./project3_submission_template.out
 INPUT ./project3_submission_template.out

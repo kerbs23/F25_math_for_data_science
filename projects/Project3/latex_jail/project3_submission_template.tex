@@ -25,10 +25,8 @@ Math 5750/6880: Mathematics of Data Science \\
 Project \#3 Final Report \\ 
 \today \\
 
-
-\noindent \replace{My GitHub Project3 repository is located here:
 \begin{center}
-\url{https://github.com/math-data-science-course/Project3}
+    \url{https://github.com/kerbs23/F25_math_for_data_science/tree/main/projects/Project3}
 \end{center}
 }
 
@@ -75,20 +73,21 @@ Then, you set the layers up to define the forward pass by stacking up the init e
 There was just so many options on the sklearn stuff, I wasn't sure what to try and test, and I am also dissatisfied with the one observation conclutions in that section.
 Like come on were data scientists we ought to know better
 So, I defined 3 models, and ran them all 8 times overnight to get a better Idea of how the different architecture works.
-I used Nevstrov gradient decent, with a momentum of .9 and a step size of .001.
+I initially used Nevstrov to solve it, but after learning about convergence issues with Stochastic stuff and GD (specifically, step size being dependant on iteration) I opted to switch to ADAM, and hopefully those issues are not present in that method either.
 I had a stopping rule whereby if we had not gotten more then .0001 below the previous best for 30 iterations, we would stop.
 
 
+\csvautotabular[respect all]{/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/torch_results/merged_results_adam_model_preformance.csv}
 
-Note: 95\% student's t for n=8 is 2.3.
+Note: 95\% student's t for n=6 is 2.4.
 
 
 The simple network is 3 layers of simple linear/relu functions. The performance is unremarkable compared to the sk results, and it trained much faster (likely because we are now on a GPU)
 
-The big network is 6 layers of linear/relu, I just tried to make the simple one twice as "long". It does not preform significantly different from the simple network, but was stopped much faster.
-This suggests to me the stopping rule is too strict for this large a model, but the image layer's consistently better performance suggests otherwise.
-"Further research is required" type moment.
+The big network is 6 layers of linear/relu, I just tried to make the simple one twice as "long". It does not preform significantly different from the simple network, but took about 15 seconds longer to converge.
 
-The image network is like the simple network, but with 2 alternating sections of convolution (learnable interaction between adjacent pixels) and maxpool (deterministic dim reduction) added to the front. Took much longer to converge, but did barely statisticaly better then the other models.
+The image network is like the simple network, but with 2 alternating sections of convolution (learnable interaction between adjacent pixels) and maxpool (deterministic dim reduction) added to the front.
+Took much longer to converge, but did statistically better than the other models.
+
 
 \end{document}

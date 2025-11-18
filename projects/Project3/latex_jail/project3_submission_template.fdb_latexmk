@@ -1,7 +1,8 @@
 # Fdb version 4
-["pdflatex"] 1761601511.11383 "project3_submission_template.tex" "project3_submission_template.pdf" "project3_submission_template" 1761601511.459 0
+["pdflatex"] 1762299885.12983 "project3_submission_template.tex" "project3_submission_template.pdf" "project3_submission_template" 1762299885.41193 2
   "/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/big_sklearn_cm.csv" 1761601474.0841 324 4bec7d853e86c7be80552aae7ecfd3db ""
   "/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/mlp_results_20251025_170334_no_conf_mtx.csv" 1761600415.34758 1402 8f9df052819be0ed1b26b58e20026af6 ""
+  "/home/magnoliad/School/2025F/F25_math_for_data_science/projects/Project3/torch_results/merged_results_adam_model_preformance.csv" 1762298000.45427 244 1f6d198172bec1b84b16d0677d50801a ""
   "/usr/share/texmf-dist/fonts/map/fontname/texfonts.map" 1755987285 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1755987285 1004 54797486969f23fa377b128694d548df ""
   "/usr/share/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1755987285 916 f87d7c45f9c908e672703b83b72241a3 ""
@@ -89,9 +90,9 @@
   "/usr/share/texmf-dist/web2c/texmf.cnf" 1755987285 42087 b0f9697c952c8f5a8eede4134282cb0d ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1757171459 5311557 9da84c45f5b388655502706482323571 ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1757171440 2008234 67e4ca95069b550026c20ed6cc72601d ""
-  "project3_submission_template.aux" 1761601511.42893 556 61a4964ccb24261e69f96e8f59d9c655 "pdflatex"
-  "project3_submission_template.out" 1761601511.43016 668 d07f8c8eeb484f8ebbe2160cf54f6e53 "pdflatex"
-  "project3_submission_template.tex" 1761601510.76492 3915 f669a106fd047813d7614a077d98c57d ""
+  "project3_submission_template.aux" 1762299885.39065 556 61a4964ccb24261e69f96e8f59d9c655 "pdflatex"
+  "project3_submission_template.out" 1762299885.39118 668 d07f8c8eeb484f8ebbe2160cf54f6e53 "pdflatex"
+  "project3_submission_template.tex" 1762299883.58061 5467 a9c27b8abd134b25e3b64cfc9366dab3 ""
   (generated)
   "project3_submission_template.aux"
   "project3_submission_template.log"
