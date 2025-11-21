@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -L -o /var/tmp/u1329310/data.zip https://www.kaggle.com/api/v1/datasets/download/weinanwangrutgers/pulsedb-balanced-training-and-testing
