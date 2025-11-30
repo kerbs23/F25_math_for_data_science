@@ -140,10 +140,10 @@ for mat_file in mat_files:
     parquet_file = f"{DATA_DIR}/parquets/{base_name}"
 
     convert_mat_to_parquet(mat_file, parquet_file)
+
 '''
 
 # %% id="jIc-z3zuJWlQ"
-'''
 # Sumarize the data and generate some histograms and such
 import polars as pl
 import glob
@@ -307,13 +307,100 @@ for file in parquet_files:
     output_path = f"balance_check/{base_name}"
     parquet_analysis(file, output_path)
 
-'''
+
+#%%
+"""
+Did some googling, and while parquet is what I usually use for tabular stuff like this, it looks like
+the hd5 format is better for efficent disk reads, like is required for this project.
+Since I am more likely to do this sort of data work in my career then the actual AI stuff,
+I am going to push through another data conversion layer. Hooray!
+"""
+import h5py
+import pyarrow.parquet as pq
+import os
+import numpy as np
+import glob
+
+
+def parquet_to_hd5(filepath, output_path):
+    print(f'working on {filepath}')
+    os.makedirs(output_path, exist_ok=True)
+    base_name = os.path.splitext(os.path.basename(filepath))[0]
+
+    with h5py.File(f'{output_path}{base_name}.h5', 'a') as h5_file, pq.ParquetFile(filepath) as parquet_file:
+        # Get the schema and a list of column names that arn't timeseries
+        schema = parquet_file.schema.to_arrow_schema()
+        metadata_cols = [col for col in schema.names if col not in ['EKG', 'PPG', 'ABP', 'Subject']]
+        # leave the timeseries for later and ditch the string
+        print(metadata_cols)
+
+        row_idx = 0
+        for i, batch in enumerate(parquet_file.iter_batches(batch_size=500)):
+            # Go thru the parqet 5 rows at a time
+            df_batch = batch.to_pandas()
+            print(f'batch {i}')
+
+            for j, row in df_batch.iterrows():
+                # Iterate through the rows individually, and create a distinct group
+                # for each row, create a group with what is going to be its index number for torch
+                # then, create 3 datasets in the group: one with all the metadata, and one for each timeseries
+                group = h5_file.create_group(f'row_{row_idx}')
+
+                # Store the metadata as a single, simple array:
+                metadata_vals = [row[col] for col in metadata_cols]
+                group.create_dataset('metadata', data=np.array(metadata_vals, dtype=np.float64))
+
+                # Store the timeseries
+                for ts_name in ['EKG', 'PPG', 'ABP']:
+                    group.create_dataset(ts_name, data=row[ts_name], compression='gzip')
+
+                row_idx += 1
+
+
+PARQUETS_DIR = "/var/tmp/u1329310/parquets/"
+parquet_files = glob.glob(f"{PARQUETS_DIR}*.parquet")
+
+H5_DIR = "/var/tmp/u1329310/h5/"
+
+
+for file in parquet_files:
+    parquet_to_hd5(file, H5_DIR)
+
+
+
+
 # %% [markdown] id="rhZ5XU2rIpLU"
 # #2. Blood Pressure Prediction
-def load_parquets_to_tensors(data_path):
-    """
-    Take a .parqet at data_path and load it up as a pytorch tensor
-    """
+from warnings import filters
+import pyarrow.parquet as pq
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+
+
+class StreamingParquetDataset(Dataset):
+    def __init__(self, file_path, columns=None, filters=None):
+        self.file_path = file_path
+        self.columns = columns
+        self.filters = filters
+        # Get the filepath's metadata
+        self.metad = pq.read_metadata(file_path)
+        self.num_rows = self.metadata.num_rows
+
+    def __len__(self):
+        return self.num_rows
+
+    def __getitem__(self, index):
+        table = pq.read_table(
+                self.file_path,
+                columns=self.columns,
+                filters=[('index', '=' idx)] if self.filters is None else self.filters,
+                use_threads=False
+                )
+                return torch.tensor(table.)
+        
+
+
 # Linear regression
 #%%
 """
@@ -326,6 +413,8 @@ I guess I could unwind the data such that each time observation of the 3 vars. i
 That is going to take FOREVER to run though
 It looks like the play might be to do it on pytorch rather then some dedicated regression platform, so I can use the gpu.
 
+Ok For this and personal reasons, I want to try to code up a pytorch implementation that makes a real linear regression with interprable coefficents
+Not least because that could be a research thing like "leveraging AI tools to overcome computational constraints in economics"
 """
 
 # %% id="Bl2N87kvImVI"
